@@ -16,8 +16,6 @@ import de.fhpotsdam.unfolding.utils.MapUtils;
   * */
 public class HelloWorld extends PApplet
 {
-
-
 	// You can ignore this.  It's to keep eclipse from reporting a warning
 	private static final long serialVersionUID = 1L;
 
@@ -41,6 +39,7 @@ public class HelloWorld extends PApplet
 		// This sets the background color for the Applet.  
 		// Play around with these numbers and see what happens!
 		this.background(200, 200, 200);
+                this.stroke(1);
 		
 		// Select a map provider
 		AbstractMapProvider provider = new Google.GoogleTerrainProvider();
@@ -67,7 +66,7 @@ public class HelloWorld extends PApplet
 		
 		// This line makes the map interactive
 		MapUtils.createDefaultEventDispatcher(this, map1);
-//                MapUtils.createDefaultEventDispatcher(this, map2);
+                MapUtils.createDefaultEventDispatcher(this, map2);
 
 	}
 

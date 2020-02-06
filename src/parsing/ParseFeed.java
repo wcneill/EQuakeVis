@@ -4,11 +4,15 @@ package parsing;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 
 import de.fhpotsdam.unfolding.data.Feature;
 import de.fhpotsdam.unfolding.data.PointFeature;
 import de.fhpotsdam.unfolding.data.ShapeFeature;
 import de.fhpotsdam.unfolding.geo.Location;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import processing.core.PApplet;
 import processing.data.XML;
 
@@ -23,62 +27,78 @@ public class ParseFeed {
 	 * @param fileName - file name or URL for data source
 	 */
 	public static List<PointFeature> parseEarthquake(PApplet p, String fileName) {
-		List<PointFeature> features = new ArrayList<PointFeature>();
+            List<PointFeature> features = new ArrayList<PointFeature>();
 
-		XML rss = p.loadXML(fileName);
-		// Get all items
-		XML[] itemXML = rss.getChildren("entry");
-		PointFeature point;
-		
-		for (int i = 0; i < itemXML.length; i++) {
-			
-				// get location and create feature
-				Location location = getLocationFromPoint(itemXML[i]);
-				
-				// if successful create PointFeature and add to list
-				if( location != null) {
-					point = new PointFeature(location);
-					features.add(point);
-				}
-				else {
-					continue;
-				}
+            XML rss = p.loadXML(fileName);
+            // Get all items
+            XML[] itemXML = rss.getChildren("entry");
+            PointFeature point;
 
-				// Sets title if existing
-				String titleStr = getStringVal(itemXML[i], "title");
-				if (titleStr != null) {
-					point.putProperty("title", titleStr);
-					// get magnitude from title
-					point.putProperty("magnitude", Float.parseFloat(titleStr.substring(2, 5)));
-				}
+            for (int i = 0; i < itemXML.length; i++) {
 
-				// Sets depth(elevation) if existing
-				float depthVal = getFloatVal(itemXML[i], "georss:elev");
-				
-				// NOT SURE ABOUT CHECKING ERR CONDITION BECAUSE 0 COULD BE VALID?
-				// get one decimal place when converting to km
-				int interVal = (int)(depthVal/100);
-				depthVal = (float) interVal/10;
-				point.putProperty("depth", Math.abs((depthVal)));
-				
+                // get location and create feature
+                Location location = getLocationFromPoint(itemXML[i]);
 
-				// Sets age if existing
-				XML[] catXML = itemXML[i].getChildren("category");
-				for (int c = 0; c < catXML.length; c++) {
-					String label = catXML[c].getString("label");
-					if ("Age".equals(label)) {
-						String ageStr = catXML[c].getString("term");
-						point.putProperty("age", ageStr);
-					}
-				}
-		
+                // if successful create PointFeature and add to list
+                if( location != null) {
+                    point = new PointFeature(location);
+                    features.add(point);
+                }
+                else {
+                    continue;
+                }
+                
+                int daysSince = getDaysSinceQuake(itemXML[i]);
+                point.putProperty("days ellapsed", daysSince);
 
-			}
-		
-			return features;
-		}
+                
+                // Sets title if existing
+                String titleStr = getStringVal(itemXML[i], "title");
+                if (titleStr != null) {
+                        point.putProperty("title", titleStr);
+                        // get magnitude from title
+                        point.putProperty("magnitude", Float.parseFloat(titleStr.substring(2, 5)));
+                }
+
+                // Sets depth(elevation) if existing
+                float depthVal = getFloatVal(itemXML[i], "georss:elev");
+
+                // NOT SURE ABOUT CHECKING ERR CONDITION BECAUSE 0 COULD BE VALID?
+                // get one decimal place when converting to km
+                int interVal = (int)(depthVal/100);
+                depthVal = (float) interVal/10;
+                point.putProperty("depth", Math.abs((depthVal)));
+
+
+                // Sets age if existing
+                XML[] catXML = itemXML[i].getChildren("category");
+                for (int c = 0; c < catXML.length; c++) {
+                    String label = catXML[c].getString("label");
+                    if ("Age".equals(label)) {
+                            String ageStr = catXML[c].getString("term");
+                            point.putProperty("age", ageStr);
+                    }
+                }
+            }
+            return features;
+        }
 
 	
+        private static int getDaysSinceQuake(XML itemXML){
+            OffsetDateTime quakeDate;
+            LocalDate dateOf = null;
+            XML pointXML = itemXML.getChild("updated");
+            String updated = pointXML.getContent();       
+            
+            if (updated != null){
+                quakeDate = OffsetDateTime.parse(updated);
+                dateOf = quakeDate.toLocalDate();
+            }
+            
+            return (int) ChronoUnit.DAYS.between(dateOf, LocalDate.now()); 
+            
+        }
+        
 	/*
 	 * Gets location from georss:point tag
 	 * 
@@ -90,6 +110,7 @@ public class ParseFeed {
 		// set loc to null in case of failure
 		Location loc = null;
 		XML pointXML = itemXML.getChild("georss:point");
+                
 		
 		// set location if existing
 		if (pointXML != null && pointXML.getContent() != null) {
