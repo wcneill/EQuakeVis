@@ -22,6 +22,13 @@ import de.fhpotsdam.unfolding.providers.Microsoft;
 import de.fhpotsdam.unfolding.providers.Microsoft.RoadProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 
+<<<<<<< HEAD
+=======
+//asdf 
+
+
+
+>>>>>>> 71458ccb6c4435bf4e32145beb21b8bc3d704f72
 //Parsing library
 import parsing.ParseFeed;
 
