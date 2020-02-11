@@ -9,6 +9,7 @@ package module3;
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.data.Feature;
 import de.fhpotsdam.unfolding.data.GeoDataReader;
+import de.fhpotsdam.unfolding.data.GeoJSONReader;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.providers.Microsoft;
 import de.fhpotsdam.unfolding.utils.MapUtils;
@@ -33,15 +34,13 @@ public class LifeExpectancy extends PApplet{
     private String year = "2017";
     private String csvPath = "data/LifeExpectancyWorldBank.csv";
     private String xmlPath = "data/life_expectancy.xml";
-    private List<Feature> countries;
+    private String jsonPath = "data/countries.geo.json";
+    private List<Feature> countryFeatures;
     private List<Marker> countryMarkers;
     private Map<String, Float> dataMap;
     
     
     public void setup(){
-        countries = GeoDataReader.loadData(this, 
-                "data/countries.geo.json");
-        countryMarkers = MapUtils.createSimpleMarkers(countries);
 
         size(800,600, OPENGL);
         map = new UnfoldingMap(this, 50, 50, 700, 500,
@@ -54,6 +53,9 @@ public class LifeExpectancy extends PApplet{
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
         }
+        
+        countryFeatures = GeoJSONReader.loadData(this, jsonPath);
+        countryMarkers = MapUtils.createSimpleMarkers(countryFeatures);
 
         map.addMarkers(countryMarkers);
         shadeMarkers();
@@ -71,12 +73,16 @@ public class LifeExpectancy extends PApplet{
             String ID = marker.getId();
             if (dataMap.containsKey(ID)){
                 float lifeExpectancy = dataMap.get(ID);
-                int blueLevel = (int) map(lifeExpectancy, 40, 90, 10, 255);
-                int c = color(0, 0, blueLevel);
+                int blueLevel = (int) map(lifeExpectancy, 40, 90, 255, 5);
+                int c = color(0, 0, 255 - blueLevel, 200);
                 marker.setColor(c);
+                marker.setStrokeColor(color(0, 0, 0));
+                marker.setStrokeWeight(1);
             }
             else{
-                marker.setColor(color(150,150,150));
+                marker.setColor(color(150,150,150,50));
+                marker.setStrokeColor(color(0, 0, 0));
+                marker.setStrokeWeight(1);
             }
             
         }

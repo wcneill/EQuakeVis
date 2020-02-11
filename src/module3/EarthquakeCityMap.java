@@ -12,6 +12,7 @@ import processing.core.PApplet;
 
 //Unfolding libraries
 import de.fhpotsdam.unfolding.UnfoldingMap;
+import de.fhpotsdam.unfolding.data.Feature;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.data.PointFeature;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -51,53 +52,69 @@ public class EarthquakeCityMap extends PApplet {
     private String earthquakesURLday = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.atom";
 
     public void setup() {
-        size(950, 600, OPENGL);
+        size(1000, 600, OPENGL);
         background(99);
 
         if (offline) {
-            map = new UnfoldingMap(this, 125, 50, 700, 500, new MBTilesMapProvider(mbTilesString));
+            map = new UnfoldingMap(this, 225, 25, 750, 550, new MBTilesMapProvider(mbTilesString));
             earthquakesURLweek = "2.5_week.atom"; 	// Same feed, saved Aug 7, 2015, for working offline
         }
         else {
-            map = new UnfoldingMap(this, 125, 50, 700, 500, new Microsoft.RoadProvider());
+            map = new UnfoldingMap(this, 225, 25, 750, 550, new Microsoft.RoadProvider());
             //earthquakesURL = "2.5_week.atom";
         }
-
-        Location center = new Location(0f,0f);
+        
+        //set panning restrictions
+        Location center = new Location(0, 0);
         float maxPan = 20000;
         map.zoomAndPanTo(2, center);
         map.setPanningRestriction(center, maxPan);
         MapUtils.createDefaultEventDispatcher(this, map);	
 
-        //List of markers to be added to map
-        List<Marker> markers = new ArrayList<Marker>();
-
         //Use parser to collect properties for each earthquake
         //PointFeatures have a getLocation method
-        List<PointFeature> earthquakes = ParseFeed.parseEarthquake(this, earthquakesURLweek);
-
-        // for each earthqauke feature, create a custom marker and add it
-        // to the list.
-        for (PointFeature quake : earthquakes){
-            Marker quakeMark = createMarker(quake);
-            markers.add(quakeMark);
-            Map<String, Object> properties = quakeMark.getProperties();
-        }
+        List<PointFeature> earthquakes = 
+                ParseFeed.parseEarthquake(this, earthquakesURLweek);
+        
+        //List of markers to be added to map
+        List<Marker> markers = featuresToPoints(earthquakes, this);
 
         // Add the markers to the map so that they are displayed
         map.addMarkers(markers);
     }
-
+    
+    public void draw() {
+        map.draw();
+        addKey();
+    }
+    
+    /**
+     * Helper method to convert a list of PointFeatures to a list of Markers.
+     * @param features
+     * @param p
+     * @return 
+     */
+    private static List<Marker> featuresToPoints(List<PointFeature> features, PApplet p){
+        List<Marker> markers = new ArrayList<>();
+        for (PointFeature feature : features){
+            Marker pointMarker = createMarker(feature, p);
+            markers.add(pointMarker);
+        }
+        return markers;
+    }
+    
     /**
      * A helper method to style markers based on features (magnitude, depth,
      * etc) of an earthquake.
      * @param feature A PointFeature object representing a single earthquake.
      * @return 
      */
-    private SimplePointMarker createMarker(PointFeature feature){  
+    private static SimplePointMarker createMarker(PointFeature feature, PApplet p){  
 
         // Create a new SimplePointMarker at the location given by the PointFeature
-        SimplePointMarker marker = new SimplePointMarker(feature.getLocation(), feature.getProperties());
+        SimplePointMarker marker = 
+                new SimplePointMarker(feature.getLocation(), 
+                                      feature.getProperties());
 
         Object magObj = feature.getProperty("magnitude");
         Object ageObj =  marker.getProperty("days ellapsed");
@@ -107,10 +124,10 @@ public class EarthquakeCityMap extends PApplet {
         //Set processing color and alpha data, for setting marker colors 
         //below.
         int alpha = 255 - (age * 255 / 7);
-        int yellow = color(255, 255, 0, alpha);
-        int red = color(255, 0, 0, alpha);
-        int green = color(0, 255, 0, alpha);
-
+        int yellow = p.color(255, 255, 0, alpha);
+        int red = p.color(255, 0, 0, alpha);
+        int green = p.color(0, 255, 0, alpha);
+        
         // Style markers based on earthquake magnitude
         if (mag < THRESHOLD_LIGHT){
             marker.setColor(green);
@@ -124,25 +141,29 @@ public class EarthquakeCityMap extends PApplet {
 
         //set radius of marker based on quake magnitude
         float radius = (float) (mag * 3.5);
-        marker.setStrokeColor(color(50,15));
+        marker.setStrokeColor(p.color(50,15));
         marker.setRadius(radius);
 
         return marker;
     }
+    
+    /**
+     * Helper method to add a legend to the map.
+     */
+    private void addKey() {
+//    rect(25, 25, 175, 550);
+    fill(0);
+    textSize(20);
+    text("Legend", 87.5f, 35);
+   
 
-    public void draw() {
-        map.draw();
-        addKey();
+    
     }
 
+ 
 
-    // helper method to draw key in GUI
-    // TODO: Implement this method to draw the key
-    private void addKey() 
-    {	
-            // Remember you can use Processing's graphics methods here
 
-    }
+
 
     public static void main(String[] args) {
         PApplet.main("module3.EarthquakeCityMap");

@@ -81,13 +81,13 @@ public class ParseLifeEx {
             
             for (XML record : records){
                 XML[] fields = record.getChildren("field");
-
-                String country = fields[0].getContent();
+                
+                String code = fields[0].getString("key");
                 String entryYear = fields[2].getContent();
                 float lifeEx = fields[3].getFloatContent();
                 
                 if (entryYear.equals(year)){
-                    dataMap.put(country, lifeEx); 
+                    dataMap.put(code, lifeEx); 
                 }
             }
         } 
