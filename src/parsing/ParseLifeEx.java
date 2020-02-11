@@ -17,8 +17,11 @@ import javax.xml.parsers.*;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.xml.sax.SAXException;
+
+//apache commons libraries for dealing with Byte Order Marks
+import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -27,25 +30,46 @@ import org.apache.commons.io.input.BOMInputStream;
  */
 public class ParseLifeEx {
     
-    private static XML noBOM(String filename, PApplet p) throws FileNotFoundException, IOException{
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        File f = new File(filename);
-        InputStream stream = new FileInputStream(f);
-        BOMInputStream bomIn = new BOMInputStream(stream);
+    /**
+     * A helper method for parsing data from the WorldBank XML document 
+     * containing life expectancy data. This method reads the file and strips 
+     * it of any Byte Order Mark which might prohibit the Processing library 
+     * from loading the XML document. 
+     * @param filename - location of XML file
+     * @param p
+     * @return
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    private static XML noBOM(String path, PApplet p) throws 
+            FileNotFoundException, UnsupportedEncodingException, IOException{
         
-        int tmp = -1;
-        while ((tmp = bomIn.read()) != -1){
-            out.write(tmp);
-        }
+        //set default encoding
+        String defaultEncoding = "UTF-8";
 
-        String strXml = out.toString();
-        return p.parseXML(strXml);
+        //create BOMInputStream to get rid of any Byte Order Mark
+        BOMInputStream bomIn = new BOMInputStream(new FileInputStream(path));
+        
+        //If BOM is present, determine encoding. If not, use UTF-8
+        ByteOrderMark bom = bomIn.getBOM();
+        String charSet = bom == null ? defaultEncoding : bom.getCharsetName();
+      
+        //get buffered reader for speed
+        InputStreamReader reader = new InputStreamReader(bomIn, charSet);
+        BufferedReader breader = new BufferedReader(reader);
+        
+        //Build string to parse into XML using Processing's PApplet.parsXML
+        StringBuilder buildXML = new StringBuilder();
+        int c;
+        while((c = breader.read()) != -1){
+            buildXML.append((char) c);
+        }
+        reader.close();
+        return p.parseXML(buildXML.toString());
     }
     
     public static Map<String, Float> lifeExpectancyFromXML(String filename, PApplet p, 
-            int year) throws FileNotFoundException, IOException{
-        
+            String year) throws UnsupportedEncodingException, IOException{
         
         Map<String, Float> dataMap = new HashMap<>();
 
@@ -59,13 +83,11 @@ public class ParseLifeEx {
                 XML[] fields = record.getChildren("field");
 
                 String country = fields[0].getContent();
-                int entryYear = fields[2].getIntContent();
+                String entryYear = fields[2].getContent();
                 float lifeEx = fields[3].getFloatContent();
                 
-                if (entryYear == year){
-                    System.out.println("Country: " + country);
-                    System.out.println("Life Expectency: " + lifeEx);
-                    dataMap.put(country, lifeEx);
+                if (entryYear.equals(year)){
+                    dataMap.put(country, lifeEx); 
                 }
             }
         } 

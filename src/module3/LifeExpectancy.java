@@ -7,18 +7,16 @@ package module3;
 
 //import unfolding libraries
 import de.fhpotsdam.unfolding.UnfoldingMap;
-import de.fhpotsdam.unfolding.providers.Google;
+import de.fhpotsdam.unfolding.data.Feature;
+import de.fhpotsdam.unfolding.data.GeoDataReader;
+import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.providers.Microsoft;
-import de.fhpotsdam.unfolding.providers.Microsoft.RoadProvider;
 import de.fhpotsdam.unfolding.utils.MapUtils;
 import java.io.IOException;
 
 // java utils
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.xml.sax.SAXException;
 
 // processing libraries
 import processing.core.PApplet;
@@ -34,33 +32,58 @@ public class LifeExpectancy extends PApplet{
     UnfoldingMap map;
     private String year = "2017";
     private String csvPath = "data/LifeExpectancyWorldBank.csv";
+    private String xmlPath = "data/life_expectancy.xml";
+    private List<Feature> countries;
+    private List<Marker> countryMarkers;
+    private Map<String, Float> dataMap;
+    
     
     public void setup(){
+        countries = GeoDataReader.loadData(this, 
+                "data/countries.geo.json");
+        countryMarkers = MapUtils.createSimpleMarkers(countries);
+
         size(800,600, OPENGL);
         map = new UnfoldingMap(this, 50, 50, 700, 500,
-                                new Microsoft.RoadProvider());
-        
+                new Microsoft.RoadProvider());
+
         MapUtils.createDefaultEventDispatcher(this, map);
-        Map<String, Float> dataMap = 
-                ParseLifeEx.lifeExpectancyFromCSV(csvPath, this, year);
         
-        for (String key : dataMap.keySet()){
-            System.out.println("Country: " + key);
-            System.out.println("Life Expectancy " + dataMap.get(key));
+        try {
+            dataMap = loadLifeExpectancyData();
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage());
         }
 
+        map.addMarkers(countryMarkers);
+        shadeMarkers();
     }
     
     public void draw(){
         map.draw();
     }
     
-    private Map<String, Float> loadLifeExpectancyData(String filename){
-        
-        Map<String, Float> dataMap = new HashMap<>();
-        
-        
-        return dataMap;
+    /**
+     * Helper method to set country shades by life expectancy.
+     */
+    private void shadeMarkers(){
+        for (Marker marker : countryMarkers){
+            String ID = marker.getId();
+            if (dataMap.containsKey(ID)){
+                float lifeExpectancy = dataMap.get(ID);
+                int blueLevel = (int) map(lifeExpectancy, 40, 90, 10, 255);
+                int c = color(0, 0, blueLevel);
+                marker.setColor(c);
+            }
+            else{
+                marker.setColor(color(150,150,150));
+            }
+            
+        }
+    }
+    
+    private Map<String, Float> loadLifeExpectancyData() throws IOException{
+        return ParseLifeEx.lifeExpectancyFromXML(xmlPath, this, year);
     }
     
     public static void main(String[] args) {
