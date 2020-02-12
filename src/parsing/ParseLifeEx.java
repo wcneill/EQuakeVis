@@ -64,7 +64,7 @@ public class ParseLifeEx {
         while((c = breader.read()) != -1){
             buildXML.append((char) c);
         }
-        reader.close();
+        breader.close();
         return p.parseXML(buildXML.toString());
     }
     

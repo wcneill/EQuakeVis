@@ -25,6 +25,7 @@ import de.fhpotsdam.unfolding.utils.MapUtils;
 
 //Parsing library
 import parsing.ParseFeed;
+import processing.core.PFont;
 
 /** EarthquakeCityMap
  * An application with an interactive map displaying earthquake data.
@@ -50,6 +51,7 @@ public class EarthquakeCityMap extends PApplet {
     //feed with magnitude 2.5+ Earthquakes
     private String earthquakesURLweek = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.atom";
     private String earthquakesURLday = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.atom";
+    private PFont f;
 
     public void setup() {
         size(1000, 600, OPENGL);
@@ -151,10 +153,17 @@ public class EarthquakeCityMap extends PApplet {
      * Helper method to add a legend to the map.
      */
     private void addKey() {
-//    rect(25, 25, 175, 550);
-    fill(0);
-    textSize(20);
-    text("Legend", 87.5f, 35);
+        fill(color(150, 10));
+        rect(25, 25, 175, 550);
+        
+        f = createFont("Sans Serif", 16, true);
+        String[] fontlist = PFont.list();
+        for(String font : fontlist){
+            System.out.println(font);
+        }
+        textFont(f, 16);
+        fill(0);
+        text("Legend", 87.5f, 50);
    
 
     
