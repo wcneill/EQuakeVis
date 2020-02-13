@@ -55,7 +55,7 @@ public class EarthquakeCityMap extends PApplet {
 
     public void setup() {
         size(1000, 600, OPENGL);
-        background(99);
+        background(50);
 
         if (offline) {
             map = new UnfoldingMap(this, 225, 25, 750, 550, new MBTilesMapProvider(mbTilesString));
@@ -141,8 +141,8 @@ public class EarthquakeCityMap extends PApplet {
             marker.setColor(red);
         }
 
-        //set radius of marker based on quake magnitude
-        float radius = (float) (mag * 3.5);
+        //set radius of marker based on quake magnitude (logistic growth)
+        float radius = (float) ((30 * Math.exp(mag))/(30 + Math.exp(mag) - 1));
         marker.setStrokeColor(p.color(50,15));
         marker.setRadius(radius);
 
@@ -153,26 +153,62 @@ public class EarthquakeCityMap extends PApplet {
      * Helper method to add a legend to the map.
      */
     private void addKey() {
+        
+        int yellow = color(255, 255, 0);
+        int red = color(255, 0, 0);
+        int green = color(0, 255, 0);
+        
         fill(color(150, 10));
         rect(25, 25, 175, 550);
-        
-        f = createFont("Sans Serif", 16, true);
-        String[] fontlist = PFont.list();
-        for(String font : fontlist){
-            System.out.println(font);
-        }
-        textFont(f, 16);
+//        
+//        f = createFont("Sans Serif", 16, true);
+//
+//        textFont(f, 16);
         fill(0);
         text("Legend", 87.5f, 50);
-   
+        
+//        textFont(f, 10);
+        text("Magnitude", 80, 90);
+        
+        fill(255);
+        stroke(0);
+        addCircleSeries(60, 120, 10, 2, 10, this);
+        
+        fill(0);
+        text("Mag < " + THRESHOLD_LIGHT, 60, 170);
+        fill(green);
+        ellipse(150, 165, 25, 25);
+        
+        fill(0);
+        text("Mag > " + THRESHOLD_LIGHT, 60, 220);
+        fill(yellow);
+        ellipse(150, 215, 25, 25);
 
-    
+        fill(0);
+        text("Mag > " + THRESHOLD_MODERATE, 60, 270);
+        fill(red);
+        ellipse(150, 265, 25, 25);
     }
-
- 
-
-
-
+    
+    /**
+     * Create a horizontal series of circles that are evenly spaced 
+     * and increasing in size.
+     * 
+     * @param x x-coord of first circle
+     * @param y y-coord of first circle
+     * @param init size of first circle
+     * @param incr size increment of circles
+     * @param spacing space between circles
+     */
+    private void addCircleSeries(int x, int y, int init,
+                                 int incr, int spacing, PApplet p){
+        
+        for (int i = 0; i < 5; i ++){
+            p.ellipse(x, y, init, init);
+            x = x + init/2 + spacing + (init + incr)/2;
+            init += incr;
+        }
+    }
 
     public static void main(String[] args) {
         PApplet.main("module3.EarthquakeCityMap");
