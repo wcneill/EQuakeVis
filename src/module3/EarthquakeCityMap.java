@@ -54,15 +54,15 @@ public class EarthquakeCityMap extends PApplet {
     private PFont f;
 
     public void setup() {
-        size(1000, 600, OPENGL);
+        size(1250, 850, OPENGL);
         background(50);
 
         if (offline) {
-            map = new UnfoldingMap(this, 225, 25, 750, 550, new MBTilesMapProvider(mbTilesString));
+            map = new UnfoldingMap(this, 225, 25, 1000, 800, new MBTilesMapProvider(mbTilesString));
             earthquakesURLweek = "2.5_week.atom"; 	// Same feed, saved Aug 7, 2015, for working offline
         }
         else {
-            map = new UnfoldingMap(this, 225, 25, 750, 550, new Microsoft.RoadProvider());
+            map = new UnfoldingMap(this, 225, 25, 1000, 800, new Microsoft.RoadProvider());
             //earthquakesURL = "2.5_week.atom";
         }
         
@@ -159,7 +159,7 @@ public class EarthquakeCityMap extends PApplet {
         int green = color(0, 255, 0);
         
         fill(color(150, 10));
-        rect(25, 25, 175, 550);
+        rect(25, 25, 175, 800);
 //        
 //        f = createFont("Sans Serif", 16, true);
 //
