@@ -13,6 +13,7 @@ import processing.core.PApplet;
 //Unfolding libraries
 import de.fhpotsdam.unfolding.UnfoldingMap;
 import de.fhpotsdam.unfolding.data.Feature;
+import de.fhpotsdam.unfolding.data.GeoJSONReader;
 import de.fhpotsdam.unfolding.marker.Marker;
 import de.fhpotsdam.unfolding.data.PointFeature;
 import de.fhpotsdam.unfolding.geo.Location;
@@ -52,6 +53,17 @@ public class EarthquakeCityMap extends PApplet {
     private String earthquakesURLweek = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.atom";
     private String earthquakesURLday = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.atom";
     private PFont f;
+    
+    // The files containing city names and info and country names and info
+    private String cityFile = "city-data.json";
+    private String countryFile = "countries.geo.json";
+    
+    // Markers for each city
+    private List<Marker> cityMarkers;
+    // Markers for each earthquake
+    private List<Marker> quakeMarkers;
+    // A List of country quakeMarkers
+    private List<Marker> countryMarkers;
 
     public void setup() {
         size(1250, 850, OPENGL);
@@ -73,16 +85,18 @@ public class EarthquakeCityMap extends PApplet {
         map.setPanningRestriction(center, maxPan);
         MapUtils.createDefaultEventDispatcher(this, map);	
 
-        //Use parser to collect properties for each earthquake
-        //PointFeatures have a getLocation method
+        // List of features to be converted to markers
         List<PointFeature> earthquakes = 
                 ParseFeed.parseEarthquake(this, earthquakesURLweek);
+        List<Feature> cities = GeoJSONReader.loadData(this, cityFile);
         
-        //List of markers to be added to map
-        List<Marker> markers = featuresToPoints(earthquakes, this);
+        //List of quakeMarkers to be added to map
+        List<Marker> quakeMarkers = quakesToMarkers(earthquakes, this);
+        List<Marker> cityMarkers = citiesToMarkers(cities, this);
 
-        // Add the markers to the map so that they are displayed
-        map.addMarkers(markers);
+        // Add the quakeMarkers to the map so that they are displayed
+        map.addMarkers(quakeMarkers);
+        map.addMarkers(cityMarkers);
     }
     
     public void draw() {
@@ -96,7 +110,7 @@ public class EarthquakeCityMap extends PApplet {
      * @param p
      * @return 
      */
-    private static List<Marker> featuresToPoints(List<PointFeature> features, PApplet p){
+    private static List<Marker> quakesToMarkers(List<PointFeature> features, PApplet p){
         List<Marker> markers = new ArrayList<>();
         for (PointFeature feature : features){
             Marker pointMarker = createMarker(feature, p);
@@ -105,9 +119,18 @@ public class EarthquakeCityMap extends PApplet {
         return markers;
     }
     
+    private static List<Marker> citiesToMarkers(List<Feature> cities, PApplet p){
+        ArrayList<Marker> markers = new ArrayList<>();
+        for(Feature city : cities) {
+            markers.add(new CityMarker(city));
+        }
+        return markers;
+    }
+    
+    
     /**
-     * A helper method to style markers based on features (magnitude, depth,
-     * etc) of an earthquake.
+     * A helper method to style quakeMarkers based on features (magnitude, depth,
+ etc) of an earthquake.
      * @param feature A PointFeature object representing a single earthquake.
      * @return 
      */
@@ -130,7 +153,7 @@ public class EarthquakeCityMap extends PApplet {
         int red = p.color(255, 0, 0, alpha);
         int green = p.color(0, 255, 0, alpha);
         
-        // Style markers based on earthquake magnitude
+        // Style quakeMarkers based on earthquake magnitude
         if (mag < THRESHOLD_LIGHT){
             marker.setColor(green);
         }
