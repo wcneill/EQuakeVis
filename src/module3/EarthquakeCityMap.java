@@ -91,8 +91,8 @@ public class EarthquakeCityMap extends PApplet {
         List<Feature> cities = GeoJSONReader.loadData(this, cityFile);
         
         //List of quakeMarkers to be added to map
-        List<Marker> quakeMarkers = quakesToMarkers(earthquakes, this);
-        List<Marker> cityMarkers = citiesToMarkers(cities, this);
+        quakeMarkers = quakesToMarkers(earthquakes, this);
+        cityMarkers = citiesToMarkers(cities, this);
 
         // Add the quakeMarkers to the map so that they are displayed
         map.addMarkers(quakeMarkers);
