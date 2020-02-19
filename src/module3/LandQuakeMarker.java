@@ -1,4 +1,4 @@
-package module4;
+package module3;
 
 import de.fhpotsdam.unfolding.data.PointFeature;
 import processing.core.PGraphics;
@@ -24,6 +24,9 @@ public class LandQuakeMarker extends EarthquakeMarker {
 
 	@Override
 	public void drawEarthquake(PGraphics pg, float x, float y) {
+                
+                pg.ellipse(x, y, radius, radius);
+                
 		// Draw a centered circle for land quakes
 		// DO NOT set the fill color here.  That will be set in the EarthquakeMarker
 		// class to indicate the depth of the earthquake.
