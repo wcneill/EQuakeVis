@@ -1,5 +1,6 @@
 package module5;
 
+import module3.CommonMarker;
 import de.fhpotsdam.unfolding.data.PointFeature;
 import processing.core.PGraphics;
 

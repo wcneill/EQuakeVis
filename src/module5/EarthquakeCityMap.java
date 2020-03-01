@@ -1,5 +1,6 @@
 package module5;
 
+import module3.CommonMarker;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -314,5 +315,9 @@ public class EarthquakeCityMap extends PApplet {
 		}
 		return false;
 	}
+        
+        public static void main(String[] args) {
+            PApplet.main(("module5.EarthquakeCityMap"));
+        }
 
 }
