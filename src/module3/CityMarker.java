@@ -16,7 +16,7 @@ public class CityMarker extends CommonMarker {
 	
 	// The size of the triangle marker
 	// It's a good idea to use this variable in your draw method
-	public static final int SIZE = 3;  
+	public static final int SIZE = 2;  
 	
 	public CityMarker(Location location) {
 		super(location);

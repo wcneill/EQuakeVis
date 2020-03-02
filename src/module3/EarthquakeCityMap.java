@@ -127,19 +127,15 @@ public class EarthquakeCityMap extends PApplet {
         quakeMarkers = quakesToMarkers(earthquakeFeatures, this);
         
         // Add quake and city markers to map
-        map.addMarkerManager(borderManager);
-        map.addMarkerManager(cityManager);
-        map.addMarkerManager(quakeManager);
         quakeManager.addMarkers(quakeMarkers);
         cityManager.addMarkers(cityDataMarkers);
-        
+        filterByPopulation(1000000);
+        map.addMarkerManager(borderManager); 
+        map.addMarkerManager(cityManager);
+        map.addMarkerManager(quakeManager);   
+
         shadeBoundaries();
         addKey();
-        
-        List<MarkerManager<Marker>> mans = map.getMarkerManagerList();
-        for (MarkerManager m : mans){
-            System.out.println(m.toString());        
-        }
     }
     
     public void draw() {
@@ -172,10 +168,6 @@ public class EarthquakeCityMap extends PApplet {
                 for (Marker m : cityBorderMarkers){
                     if (map.isHit(map.getScreenPosition(m.getLocation()))){
                         toAdd.add(m);
-                        
-                        for (String s : m.getProperties().keySet()){
-                            System.out.println(s);
-                        }
                     }
                 }
                 borderManager.addMarkers(toAdd);
@@ -387,23 +379,16 @@ public class EarthquakeCityMap extends PApplet {
      * @param threshold
      * @return 
      */
-    private List<Marker> filterBordersByPopulation(List<Marker> toFilter, int threshold){
-        
-
-        List<Marker> filtered = new LinkedList<>();
-        Map<String, String> popMap = 
-                getRowMap(cityTable, "city_ascii", "population");
-        
-        for (Marker f : toFilter){
-            String cityName = f.getStringProperty("NAME");
-            String pop = popMap.get(cityName);
-            if ((cityName != null) && (pop != null) && (!pop.isBlank())){
-                if (Double.parseDouble(pop) > threshold){
-                    filtered.add(f);
-                }
-            }   
+    private void filterByPopulation(int threshold){
+        List<Marker> toRemove = new LinkedList<>();
+        for (Object m : cityManager.getMarkers()){
+            if (((Marker)m).getIntegerProperty("population") < threshold){
+                toRemove.add((Marker)m);
+            }
         }
-        return filtered;
+        for (Marker n : toRemove){
+            cityManager.removeMarker(n);
+        }
     }
 
     public static void main(String[] args) {
