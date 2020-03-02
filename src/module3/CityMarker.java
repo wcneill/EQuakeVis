@@ -12,7 +12,7 @@ import processing.core.PGraphics;
  * @author Your name here
  *
  */
-public class CityMarker extends SimplePointMarker {
+public class CityMarker extends CommonMarker {
 	
 	// The size of the triangle marker
 	// It's a good idea to use this variable in your draw method
@@ -40,22 +40,31 @@ public class CityMarker extends SimplePointMarker {
 		// Restore previous drawing style
 		pg.popStyle();
 	}
+        
+        
+        @Override
+        public void showTitle(PGraphics p, float x, float y){
+        
+        }
+        
+        @Override
+        public void drawMarker(PGraphics p, float x, float y){
+            
+        }
 	
-	/* Local getters for some city properties.  You might not need these 
-	 * in module 4. 	 */
 	public String getCity()
 	{
-		return getStringProperty("name");
+            return getStringProperty("name");
 	}
 	
 	public String getCountry()
 	{
-		return getStringProperty("country");
+            return getStringProperty("country");
 	}
 	
 	public float getPopulation()
 	{
-		return Float.parseFloat(getStringProperty("population"));
+            return Float.parseFloat(getStringProperty("population"));
 	}
 	
 }

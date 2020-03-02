@@ -9,7 +9,7 @@ import processing.core.PGraphics;
  * @author wesley.neill@gmail.com
  *
  */
-public abstract class EarthquakeMarker extends SimplePointMarker
+public abstract class EarthquakeMarker extends CommonMarker
 {
 	
 	// Did the earthquake occur on land?  This will be set by the subclasses.

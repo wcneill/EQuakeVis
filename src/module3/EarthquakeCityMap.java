@@ -20,6 +20,7 @@ import de.fhpotsdam.unfolding.events.MapEvent;
 import de.fhpotsdam.unfolding.events.PanMapEvent;
 import de.fhpotsdam.unfolding.events.ZoomMapEvent;
 import de.fhpotsdam.unfolding.geo.Location;
+import de.fhpotsdam.unfolding.marker.MarkerManager;
 import de.fhpotsdam.unfolding.marker.SimplePointMarker;
 import de.fhpotsdam.unfolding.providers.Google;
 import de.fhpotsdam.unfolding.providers.MBTilesMapProvider;
@@ -32,6 +33,7 @@ import java.util.LinkedList;
 //Parsing library
 import parsing.ParseFeed;
 import processing.core.PFont;
+import processing.core.PGraphics;
 import processing.data.Table;
 import processing.data.TableRow;
 
@@ -66,16 +68,26 @@ public class EarthquakeCityMap extends PApplet {
     private String countryFile = "countries.geo.json";
 
     
-    // Country features from JSON
-    private List<Feature> cityFeatures;
-    // Markers for each city
-    private List<Marker> cityMarkers;
+    //city border features from JSON
+    private List<Feature> cityBorderFeatures;
+    //city point and data features from CSV:
+    private List<Feature> cityDataFeatures;
+    // earthquake data features
+    private List<PointFeature> earthquakeFeatures;
+    
+    // Markers for each city's borders
+    private List<Marker> cityBorderMarkers;
+    // Markers for city points
+     private List<Marker> cityDataMarkers;
     // Markers for each earthquake
     private List<Marker> quakeMarkers;
-    // A List of country quakeMarkers
-    private List<Marker> countryMarkers;
     
-    // A table object containing data about cities for filtering features.
+    private MarkerManager borderManager = new MarkerManager();
+    private MarkerManager cityManager = new MarkerManager();
+    private MarkerManager quakeManager = new MarkerManager();
+    
+    // A table object containing data about cities for creating
+    // and filtering city features.
     private Table cityTable;
 
     public void setup() {
@@ -91,34 +103,43 @@ public class EarthquakeCityMap extends PApplet {
             //earthquakesURL = "2.5_week.atom";
         }
         
-        //set panning restrictions
-        Location center = new Location(0, 0);
-        float maxPan = 20;
-        map.zoomAndPanTo(2, center);
-//        map.setPanningRestriction(center, maxPan);
+        // create initial map view
+        map.zoomAndPanTo(2, new Location(0, 0));
         map.setZoomRange(2, 15);
         MapUtils.createDefaultEventDispatcher(this, map);	
 
-        // List of features to be converted to markers
-        List<PointFeature> earthquakes = 
-                ParseFeed.parseEarthquake(this, earthquakesURLweek);
-        List<Feature> cities = GeoJSONReader.loadData(this, cityJSONpath);
-        
-        
+        // Load table containing city data
         cityTable = loadTable(cityCSVpath, "header");
-        cityFeatures = GeoJSONReader.loadData(this, cityJSONpath);
-        cityMarkers = MapUtils.createSimpleMarkers(cityFeatures);
+        // Load city border data from Jason
+        cityBorderFeatures = GeoJSONReader.loadData(this, cityJSONpath);
+        // Load city location and population data
+        cityDataFeatures = addPointFeatures();
+        // Create markers for city borders
+        cityBorderMarkers = MapUtils.createSimpleMarkers(cityBorderFeatures);
+        // Create markers for city locations
+        cityDataMarkers = citiesToMarkers(cityDataFeatures, this);
+//        cityDataMarkers = MapUtils.createSimpleMarkers(cityDataFeatures);
+        
+        // Lists of features to be converted to markers
+        earthquakeFeatures = ParseFeed.parseEarthquake(this, earthquakesURLweek);
+        
         //List of quakeMarkers to be added to map
-        quakeMarkers = quakesToMarkers(earthquakes, this);
-//        cityMarkers = citiesToMarkers(cities, this);
+        quakeMarkers = quakesToMarkers(earthquakeFeatures, this);
         
-
-        // Add the quakeMarkers to the map so that they are displayed
-        map.addMarkers(quakeMarkers);
-        map.addMarkers(filterByPopulation(cityMarkers, 3000000));
+        // Add quake and city markers to map
+        map.addMarkerManager(borderManager);
+        map.addMarkerManager(cityManager);
+        map.addMarkerManager(quakeManager);
+        quakeManager.addMarkers(quakeMarkers);
+        cityManager.addMarkers(cityDataMarkers);
+        
         shadeBoundaries();
-        
         addKey();
+        
+        List<MarkerManager<Marker>> mans = map.getMarkerManagerList();
+        for (MarkerManager m : mans){
+            System.out.println(m.toString());        
+        }
     }
     
     public void draw() {
@@ -141,38 +162,27 @@ public class EarthquakeCityMap extends PApplet {
     }
     
     public void mapChanged(MapEvent mapEvent){
-        System.out.println("Event Detected");
         if (mapEvent.getType().equals(PanMapEvent.TYPE_PAN) 
                 || mapEvent.getType().equals(ZoomMapEvent.TYPE_ZOOM)){
-            System.out.println("Event is Pan or Zoom");
             List<Marker> toAdd = new LinkedList<>();
+            List<Marker> toRemove = new LinkedList<>();
             
-            if (map.getZoomLevel() >= 6 && map.getZoomLevel() < 8){
-                for (Marker m : cityMarkers){
+            borderManager.clearMarkers();
+            if (map.getZoomLevel() > 6){
+                for (Marker m : cityBorderMarkers){
                     if (map.isHit(map.getScreenPosition(m.getLocation()))){
                         toAdd.add(m);
-                        System.out.println("Marker to add: " + m.getStringProperty("NAME"));
+                        
+                        for (String s : m.getProperties().keySet()){
+                            System.out.println(s);
+                        }
                     }
                 }
-                
-                map.addMarkers(filterByPopulation(toAdd, 1000000));
-                System.out.println("Markers Added");
+                borderManager.addMarkers(toAdd);
             }
-            
-            if (map.getZoomLevel() >= 8){
-                for (Marker m : cityMarkers){
-                    if (map.isHit(map.getScreenPosition(m.getLocation()))){
-                        toAdd.add(m);
-                        System.out.println("Marker to add: " + m.getStringProperty("NAME"));
-                    }
-                }
-                
-                map.addMarkers(filterByPopulation(toAdd, 300000));
-                System.out.println("Markers Added");
-            }
-            
         }
     }
+    
   
     
     /**
@@ -184,7 +194,7 @@ public class EarthquakeCityMap extends PApplet {
     private static List<Marker> quakesToMarkers(List<PointFeature> features, PApplet p){
         List<Marker> markers = new ArrayList<>();
         for (PointFeature feature : features){
-            Marker pointMarker = createMarker(feature, p);
+            Marker pointMarker = createQuakeMarker(feature, p);
             markers.add(pointMarker);
         }
         return markers;
@@ -200,12 +210,12 @@ public class EarthquakeCityMap extends PApplet {
     
     
     /**
-     * A helper method to style quakeMarkers based on features (magnitude, depth,
- etc) of an earthquake.
+     * A helper method to create and style quakeMarkers based on feature data
+     * (magnitude, depth, etc) of an earthquake.
      * @param feature A PointFeature object representing a single earthquake.
      * @return 
      */
-    private static SimplePointMarker createMarker(PointFeature feature, PApplet p){  
+    private static SimplePointMarker createQuakeMarker(PointFeature feature, PApplet p){  
 
         // Create a new SimplePointMarker at the location given by the PointFeature
         SimplePointMarker marker = 
@@ -242,6 +252,31 @@ public class EarthquakeCityMap extends PApplet {
 
         return marker;
     }
+
+    public List<Feature> addPointFeatures(){
+        
+        List<Feature> cities = new LinkedList<>();
+        
+        for (TableRow row : cityTable.rows()){
+            int population = row.getInt("population");
+            if (population > 300000){
+                String city = row.getString("city_ascii");
+                float lat = row.getFloat("lat");
+                float lng = row.getFloat("lng");
+                Location loc = new Location(lat, lng);
+                
+                Feature f = new PointFeature(loc);
+                f.addProperty("city_name", city);
+                f.addProperty("population", population);
+                
+                cities.add(f);  
+            }
+        }
+        
+        return cities;  
+    }
+    
+    
     
     /**
      * Helper method to add a legend to the map.
@@ -311,8 +346,8 @@ public class EarthquakeCityMap extends PApplet {
     }   
     
     private void shadeBoundaries(){
-        for (Marker marker : cityMarkers){
-            marker.setColor(this.color(255, 0, 0, 150));
+        for (Marker marker : cityBorderMarkers){
+            marker.setColor(this.color(255, 0, 0, 75));
         }
     }
     
@@ -352,7 +387,7 @@ public class EarthquakeCityMap extends PApplet {
      * @param threshold
      * @return 
      */
-    private List<Marker> filterByPopulation(List<Marker> toFilter, int threshold){
+    private List<Marker> filterBordersByPopulation(List<Marker> toFilter, int threshold){
         
 
         List<Marker> filtered = new LinkedList<>();
