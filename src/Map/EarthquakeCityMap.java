@@ -62,9 +62,9 @@ public class EarthquakeCityMap extends PApplet {
     private String earthquakesURLday = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.atom";
     
     // The files containing city names and info and country names and info
-    private String cityJSONpath = "cities.geo.json";
-    private String cityCSVpath = "worldcities.csv";
-    private String countryFile = "countries.geo.json";
+    private String cityJSONpath = "/data/cities.geo.json";
+    private String cityCSVpath = "/data/worldcities.csv";
+    private String countryFile = "/data/countries.geo.json";
 
     
     //city border features from JSON
@@ -122,7 +122,8 @@ public class EarthquakeCityMap extends PApplet {
         cityBorderMarkers = MapUtils.createSimpleMarkers(cityBorderFeatures);
         // Create markers for city locations
         cityDataMarkers = citiesToMarkers(cityDataFeatures, this);
-//        cityDataMarkers = MapUtils.createSimpleMarkers(cityDataFeatures);
+        
+        HashMap<String, Object> props = cityDataMarkers.get(0).getProperties();    
         
         // Lists of features to be converted to markers
         earthquakeFeatures = ParseFeed.parseEarthquake(this, earthquakesURLweek);
@@ -174,12 +175,12 @@ public class EarthquakeCityMap extends PApplet {
             lastSelected = null;
 
         }
-        System.out.println("Mouse Moved");
-//        selectMarkerIfHover(quakeMarkers);
-//        selectMarkerIfHover(cityDataMarkers);
+
+        selectMarkerIfHover(quakeMarkers);
+        selectMarkerIfHover(cityDataMarkers);
     }
     
-    //ASDf
+    
     public void mapChanged(MapEvent mapEvent){
         if (mapEvent.getType().equals(PanMapEvent.TYPE_PAN) 
                 || mapEvent.getType().equals(ZoomMapEvent.TYPE_ZOOM)){
@@ -201,19 +202,24 @@ public class EarthquakeCityMap extends PApplet {
     // If there is a marker under the cursor, and lastSelected is null 
     // set the lastSelected to be the first marker found under the cursor
     // Make sure you do not select two markers.
-//    private void selectMarkerIfHover(List<CommonMarker> markers)
-//    {
-//        float x = mouseX;
-//        float y = mouseY;
-//
-//        for (CommonMarker marker : markers){
-//            if (marker.isInside(map, x, y)){
-//                lastSelected = marker;
-//                lastSelected.setSelected(true);
-//                break;
-//            }
-//        }
-//    }
+    private void selectMarkerIfHover(List<CommonMarker> markers)
+    {
+        float x = mouseX;
+        float y = mouseY;
+        
+        if(lastSelected != null){
+            lastSelected.setSelected(false);
+            lastSelected = null;
+        }
+      
+        for (CommonMarker marker : markers){
+            if (marker.isInside(map, x, y)){
+                lastSelected = marker;
+                lastSelected.setSelected(true);
+                break;
+            }
+        }
+    }
     
   
     /**
@@ -234,8 +240,12 @@ public class EarthquakeCityMap extends PApplet {
     private static List<CommonMarker> citiesToMarkers(List<Feature> cities, PApplet p){
         ArrayList<CommonMarker> markers = new ArrayList<>();
         for(Feature city : cities) {
-            markers.add(new CityMarker(city));
+
+            CityMarker cm = new CityMarker(city);
+            markers.add(cm);
         }
+        Feature testCity = cities.get(0);
+
         return markers;
     }
 
@@ -418,6 +428,6 @@ public class EarthquakeCityMap extends PApplet {
     }
 
     public static void main(String[] args) {
-        PApplet.main("module3.EarthquakeCityMap");
+        PApplet.main("Map.EarthquakeCityMap");
     }
 }

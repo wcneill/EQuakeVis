@@ -25,3 +25,6 @@ nb-configuration.xml
 
 # Map Tiles: #
 blankLight-1-3.mbtiles
+
+# Jars #
+ucsd_jars/

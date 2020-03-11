@@ -38,7 +38,7 @@ public class EarthquakeMarker extends CommonMarker
                 
 		float mag = Float.parseFloat(properties.get("magnitude").toString());
                 
-                this.radius = (float) ((20 * Math.exp(mag))/(20 + Math.exp(mag) - 1));
+                this.radius = (float) ((30 * Math.exp(mag))/(30 + Math.exp(mag) - 1));
                 
 		properties.put("radius", radius);
 
@@ -52,6 +52,8 @@ public class EarthquakeMarker extends CommonMarker
             // save previous styling
             pg.pushStyle();
             
+            pg.noStroke();
+            
             // determine color of marker from magnitude
             colorDetermine(pg);
 
@@ -63,20 +65,23 @@ public class EarthquakeMarker extends CommonMarker
 		
 	}
 	
-        // Determine color by magnitude
+        // Determine color by magnitude and transparency by age
 	private void colorDetermine(PGraphics pg) {
         
             float mag = getMagnitude();
+            int age = getAge();
+            int alpha = 110*(1-(age/7));
+            
             
             // Style markers based on earthquake magnitude
             if (mag < THRESHOLD_LIGHT){
-                pg.fill(0, 255, 0);
+                pg.fill(0, 255, 0, alpha);
             }
             if (mag >= THRESHOLD_LIGHT && mag < THRESHOLD_MODERATE){
-                pg.fill(255, 255, 0);
+                pg.fill(255, 255, 0, alpha);
             }    
             if (mag >= THRESHOLD_MODERATE){
-                pg.fill(255, 0 , 0);                
+                pg.fill(255, 0 , 0, alpha);                
             }  
 	}
 	
@@ -84,6 +89,9 @@ public class EarthquakeMarker extends CommonMarker
 	/*
 	 * getters for earthquake properties
 	 */
+        public int getAge(){
+            return Integer.parseInt(getProperty("days ellapsed").toString());
+        }
 	
 	public float getMagnitude() {
 		return Float.parseFloat(getProperty("magnitude").toString());
@@ -104,7 +112,9 @@ public class EarthquakeMarker extends CommonMarker
 
     @Override
     public void showTitle(PGraphics pg, float x, float y) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//          pg.rect(x, y, 50, 50);
+        
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 	
 	

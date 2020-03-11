@@ -42,23 +42,30 @@ public class CityMarker extends CommonMarker {
         public void showTitle(PGraphics p, float x, float y){
             // for now, just trying to test the hover by popping up a blank 
             // rectangle
-            p.rect(x, y, 50, 50);
+            
             String city = getCity();
-            Float population = getPopulation();
+            int population = getPopulation();
+            
+            p.fill(250);
+            p.rect(x, y, 150, 35);
+            p.fill(0);
+            p.text(city, x+15, y+15);
+            p.text("Population: " + population, x+15, y+30);
+
         }
 	
 	public String getCity()
 	{
-            return getStringProperty("name");
+            return getStringProperty("city_name");
 	}
 	
 	public String getCountry()
 	{
-            return getStringProperty("country");
+            return getStringProperty("country").toString();
 	}
 	
-	public float getPopulation()
-	{
-            return Float.parseFloat(getStringProperty("population"));
+	public int getPopulation()
+	{  
+            return Integer.parseInt(getProperty("population").toString());
 	}	
 }
