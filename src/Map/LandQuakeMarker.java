@@ -1,4 +1,4 @@
-package module3;
+package Map;
 
 import de.fhpotsdam.unfolding.data.PointFeature;
 import processing.core.PGraphics;

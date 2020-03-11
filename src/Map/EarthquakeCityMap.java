@@ -1,4 +1,4 @@
-package module3;
+package Map;
 
 //Java utilities libraries
 import java.util.ArrayList;
@@ -82,6 +82,10 @@ public class EarthquakeCityMap extends PApplet {
     // Markers for each earthquake
     private List<Marker> quakeMarkers;
     
+    // fields to help handle mouse events
+    private CommonMarker lastSelected;
+    private CommonMarker lastClicked;
+    
     private MarkerManager borderManager = new MarkerManager();
     private MarkerManager cityManager = new MarkerManager();
     private MarkerManager quakeManager = new MarkerManager();
@@ -104,8 +108,9 @@ public class EarthquakeCityMap extends PApplet {
         }
         
         // create initial map view
-        map.zoomAndPanTo(2, new Location(0, 0));
+        map.zoomAndPanTo(2, UnfoldingMap.PRIME_MERIDIAN_EQUATOR_LOCATION);
         map.setZoomRange(2, 15);
+//        map.setRectangularPanningRestriction(lctn, lctn1);
         MapUtils.createDefaultEventDispatcher(this, map);	
 
         // Load table containing city data
@@ -157,6 +162,23 @@ public class EarthquakeCityMap extends PApplet {
         }
     }
     
+    @Override
+    public void mouseClicked(){
+//        location
+    }
+    
+    @Override
+    public void mouseMoved(){
+        // clear the last selection
+        if (lastSelected != null) {
+            lastSelected.setSelected(false);
+            lastSelected = null;
+
+        }
+        selectMarkerIfHover(quakeMarkers);
+        selectMarkerIfHover(cityDataMarkers);
+    }
+    
     public void mapChanged(MapEvent mapEvent){
         if (mapEvent.getType().equals(PanMapEvent.TYPE_PAN) 
                 || mapEvent.getType().equals(ZoomMapEvent.TYPE_ZOOM)){
@@ -171,6 +193,24 @@ public class EarthquakeCityMap extends PApplet {
                     }
                 }
                 borderManager.addMarkers(toAdd);
+            }
+        }
+    }
+    
+    // If there is a marker under the cursor, and lastSelected is null 
+    // set the lastSelected to be the first marker found under the cursor
+    // Make sure you do not select two markers.
+    private void selectMarkerIfHover(List<Marker> markers)
+    {
+        float x = mouseX;
+        float y = mouseY;
+
+        for (Marker m : markers){
+            CommonMarker marker = (CommonMarker)m;
+            if (marker.isInside(map, x, y)){
+                lastSelected = marker;
+                lastSelected.setSelected(true);
+                break;
             }
         }
     }
@@ -199,8 +239,7 @@ public class EarthquakeCityMap extends PApplet {
         }
         return markers;
     }
-    
-    
+
     /**
      * A helper method to create and style quakeMarkers based on feature data
      * (magnitude, depth, etc) of an earthquake.
@@ -268,8 +307,7 @@ public class EarthquakeCityMap extends PApplet {
         return cities;  
     }
     
-    
-    
+
     /**
      * Helper method to add a legend to the map.
      */
@@ -363,23 +401,13 @@ public class EarthquakeCityMap extends PApplet {
         }
         
         return tableMap;
-
     }
     
     /**
-     * Method takes a list of city features with property "NAME" but no population.
-     * The method is then filtered by population based on a hashmap that contains
-     * both city names and population to return. The filtered list of features
-     * is returned. This is a work around to filter data from a JSON file containing
-     * the border geometry for most of the cities of the world, but does not have 
-     * population data as a feature. 
-     * 
-     * @param popMap
-     * @param toFilter
-     * @param threshold
-     * @return 
+     * Method filters markers by population.
+     * @param threshold population 
      */
-    private void filterByPopulation(int threshold){
+    public void filterByPopulation(int threshold){
         List<Marker> toRemove = new LinkedList<>();
         for (Object m : cityManager.getMarkers()){
             if (((Marker)m).getIntegerProperty("population") < threshold){

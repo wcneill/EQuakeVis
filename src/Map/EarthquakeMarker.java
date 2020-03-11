@@ -1,4 +1,4 @@
-package module3;
+package Map;
 
 import de.fhpotsdam.unfolding.data.PointFeature;
 import de.fhpotsdam.unfolding.marker.SimplePointMarker;
@@ -9,11 +9,8 @@ import processing.core.PGraphics;
  * @author wesley.neill@gmail.com
  *
  */
-public abstract class EarthquakeMarker extends CommonMarker
+public class EarthquakeMarker extends CommonMarker
 {
-	
-	// Did the earthquake occur on land?  This will be set by the subclasses.
-	protected boolean isOnLand;
 
 	// SimplePointMarker has a field "radius" which is inherited
 	// by Earthquake marker:
@@ -29,11 +26,8 @@ public abstract class EarthquakeMarker extends CommonMarker
 	public static final float THRESHOLD_INTERMEDIATE = 70;
 	/** Greater than or equal to this threshold is a deep depth */
 	public static final float THRESHOLD_DEEP = 300;
-	
-	// abstract method implemented in derived classes
-	public abstract void drawEarthquake(PGraphics pg, float x, float y);
 		
-	
+        
 	// constructor
 	public EarthquakeMarker (PointFeature feature) 
 	{
@@ -54,15 +48,15 @@ public abstract class EarthquakeMarker extends CommonMarker
 	
 
 	// calls abstract method drawEarthquake 
-	public void draw(PGraphics pg, float x, float y) {
+	public void drawMarker(PGraphics pg, float x, float y) {
             // save previous styling
             pg.pushStyle();
             
             // determine color of marker from magnitude
             colorDetermine(pg);
 
-            // call abstract method implemented in child class to draw marker shape
-            drawEarthquake(pg, x, y);
+            // draw ellipse marker 
+            pg.ellipse(x, y, radius, radius);
 
             // reset to previous styling
             pg.popStyle();
@@ -73,8 +67,8 @@ public abstract class EarthquakeMarker extends CommonMarker
 	private void colorDetermine(PGraphics pg) {
         
             float mag = getMagnitude();
-                       // Style markers based on earthquake magnitude
-//            System.out.println("Magnitude: " + mag);
+            
+            // Style markers based on earthquake magnitude
             if (mag < THRESHOLD_LIGHT){
                 pg.fill(0, 255, 0);
             }
@@ -83,8 +77,7 @@ public abstract class EarthquakeMarker extends CommonMarker
             }    
             if (mag >= THRESHOLD_MODERATE){
                 pg.fill(255, 0 , 0);                
-            }
-                
+            }  
 	}
 	
 	
@@ -108,11 +101,11 @@ public abstract class EarthquakeMarker extends CommonMarker
 	public float getRadius() {
 		return Float.parseFloat(getProperty("radius").toString());
 	}
-	
-	public boolean isOnLand()
-	{
-		return isOnLand;
-	}
+
+    @Override
+    public void showTitle(PGraphics pg, float x, float y) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 	
 	
 }

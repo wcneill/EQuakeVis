@@ -22,3 +22,6 @@ nb-configuration.xml
 # Data Files (txt, csv, etc.) #
 /Ciphers/data
 /StoryTime/nbproject/private/
+
+# Map Tiles: #
+blankLight-1-3.mbtiles
