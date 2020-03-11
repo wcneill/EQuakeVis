@@ -32,8 +32,8 @@ public class EarthquakeMarker extends CommonMarker
 	public EarthquakeMarker (PointFeature feature) 
 	{
 		super(feature.getLocation());
-		// Add a radius property and then set the properties
                 
+		// Get Properties from feature, then set them to this marker.
 		java.util.HashMap<String, Object> properties = feature.getProperties();
                 
 		float mag = Float.parseFloat(properties.get("magnitude").toString());
@@ -41,7 +41,7 @@ public class EarthquakeMarker extends CommonMarker
                 this.radius = (float) ((20 * Math.exp(mag))/(20 + Math.exp(mag) - 1));
                 
 		properties.put("radius", radius);
-                
+
 		setProperties(properties);
  
 	}

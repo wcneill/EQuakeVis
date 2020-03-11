@@ -77,9 +77,9 @@ public class EarthquakeCityMap extends PApplet {
     // Markers for each city's borders
     private List<Marker> cityBorderMarkers;
     // Markers for city points
-     private List<Marker> cityDataMarkers;
+     private List<CommonMarker> cityDataMarkers;
     // Markers for each earthquake
-    private List<Marker> quakeMarkers;
+    private List<CommonMarker> quakeMarkers;
     
     // fields to help handle mouse events
     private CommonMarker lastSelected;
@@ -174,8 +174,9 @@ public class EarthquakeCityMap extends PApplet {
             lastSelected = null;
 
         }
-        selectMarkerIfHover(quakeMarkers);
-        selectMarkerIfHover(cityDataMarkers);
+        System.out.println("Mouse Moved");
+//        selectMarkerIfHover(quakeMarkers);
+//        selectMarkerIfHover(cityDataMarkers);
     }
     
     public void mapChanged(MapEvent mapEvent){
@@ -199,40 +200,38 @@ public class EarthquakeCityMap extends PApplet {
     // If there is a marker under the cursor, and lastSelected is null 
     // set the lastSelected to be the first marker found under the cursor
     // Make sure you do not select two markers.
-    private void selectMarkerIfHover(List<Marker> markers)
-    {
-        float x = mouseX;
-        float y = mouseY;
-
-        for (Marker m : markers){
-            CommonMarker marker = (CommonMarker)m;
-            if (marker.isInside(map, x, y)){
-                lastSelected = marker;
-                lastSelected.setSelected(true);
-                break;
-            }
-        }
-    }
+//    private void selectMarkerIfHover(List<CommonMarker> markers)
+//    {
+//        float x = mouseX;
+//        float y = mouseY;
+//
+//        for (CommonMarker marker : markers){
+//            if (marker.isInside(map, x, y)){
+//                lastSelected = marker;
+//                lastSelected.setSelected(true);
+//                break;
+//            }
+//        }
+//    }
     
   
-    
     /**
      * Helper method to convert a list of PointFeatures to a list of Markers.
      * @param features
      * @param p
      * @return 
      */
-    private static List<Marker> quakesToMarkers(List<PointFeature> features, PApplet p){
-        List<Marker> markers = new ArrayList<>();
+    private static List<CommonMarker> quakesToMarkers(List<PointFeature> features, PApplet p){
+        List<CommonMarker> markers = new ArrayList<>();
         for (PointFeature feature : features){
-            Marker pointMarker = createQuakeMarker(feature, p);
+            EarthquakeMarker pointMarker = createQuakeMarker(feature, p);
             markers.add(pointMarker);
         }
         return markers;
     }
     
-    private static List<Marker> citiesToMarkers(List<Feature> cities, PApplet p){
-        ArrayList<Marker> markers = new ArrayList<>();
+    private static List<CommonMarker> citiesToMarkers(List<Feature> cities, PApplet p){
+        ArrayList<CommonMarker> markers = new ArrayList<>();
         for(Feature city : cities) {
             markers.add(new CityMarker(city));
         }
@@ -245,12 +244,11 @@ public class EarthquakeCityMap extends PApplet {
      * @param feature A PointFeature object representing a single earthquake.
      * @return 
      */
-    private static SimplePointMarker createQuakeMarker(PointFeature feature, PApplet p){  
+    private static EarthquakeMarker createQuakeMarker(PointFeature feature, PApplet p){  
 
         // Create a new SimplePointMarker at the location given by the PointFeature
-        SimplePointMarker marker = 
-                new SimplePointMarker(feature.getLocation(), 
-                                      feature.getProperties());
+        EarthquakeMarker marker = 
+                new EarthquakeMarker(feature);
 
         Object magObj = feature.getProperty("magnitude");
         Object ageObj =  marker.getProperty("days ellapsed");
