@@ -179,6 +179,7 @@ public class EarthquakeCityMap extends PApplet {
 //        selectMarkerIfHover(cityDataMarkers);
     }
     
+    //ASDf
     public void mapChanged(MapEvent mapEvent){
         if (mapEvent.getType().equals(PanMapEvent.TYPE_PAN) 
                 || mapEvent.getType().equals(ZoomMapEvent.TYPE_ZOOM)){
