@@ -112,9 +112,7 @@ public class EarthquakeMarker extends CommonMarker
 
     @Override
     public void showTitle(PGraphics pg, float x, float y) {
-//          pg.rect(x, y, 50, 50);
-        
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
     }
 	
 	

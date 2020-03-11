@@ -40,8 +40,6 @@ public class CityMarker extends CommonMarker {
         
         @Override
         public void showTitle(PGraphics p, float x, float y){
-            // for now, just trying to test the hover by popping up a blank 
-            // rectangle
             
             String city = getCity();
             int population = getPopulation();
