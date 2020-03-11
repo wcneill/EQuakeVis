@@ -39,8 +39,7 @@ import processing.data.TableRow;
 
 /** EarthquakeCityMap
  * An application with an interactive map displaying earthquake data.
- * @author Your name here
- * Date: July 17, 2015
+ * @author Wesley.neill@gmail.com
  * */
 public class EarthquakeCityMap extends PApplet {
 
