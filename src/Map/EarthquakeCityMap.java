@@ -173,15 +173,15 @@ public class EarthquakeCityMap extends PApplet {
         if (lastSelected != null) {
             lastSelected.setSelected(false);
             lastSelected = null;
-            
         }
         
+        //Check if any cities are being hoverd over. 
         CommonMarker city = selectMarkerIfHover(cityDataMarkers);
-        
+   
+        //If not, check for any quakes being hovered over. 
         if (city == null){
-             selectMarkerIfHover(quakeMarkers);
+            selectMarkerIfHover(quakeMarkers);
         } 
-        
         
     }
     
