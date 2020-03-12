@@ -1,0 +1,30 @@
+# NetBeans specific #
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+lib/
+nbproject/
+data/
+build.xml
+manifest.mf
+nbactions.xml
+nb-configuration.xml
+
+# Class Files #
+*.class
+
+# Package Files #
+*.war
+*.ear
+
+# Data Files (txt, csv, etc.) #
+/Ciphers/data
+/StoryTime/nbproject/private/
+
+# Map Tiles: #
+blankLight-1-3.mbtiles
+
+# UCSD jars #
+ucsd_jars/
